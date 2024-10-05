@@ -42,7 +42,6 @@ if TEST:
 
         # DEBUG
         print(X_train.shape, X_test.shape, len(y_train), len(y_test))
-        # print(X_test[0])
 
         return X_train, X_test, y_train, y_test
 
@@ -74,7 +73,6 @@ def gen_train_test_data() -> tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.nd
 
     # DEBUG
     print(X_train.shape, X_test.shape, len(y_train), len(y_test))
-    # print(X_test[0])
 
     return X_train, X_test, y_train, y_test
 
