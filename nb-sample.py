@@ -8,13 +8,13 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 
-TEST = 1
+TEST = 0
 SMOOTH = 1
 
 if TEST:
 
     def gen_custum_train_data() -> (
-        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+        tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]
     ):
         """
         Generate custom training and test data.
@@ -42,12 +42,12 @@ if TEST:
 
         # DEBUG
         print(X_train.shape, X_test.shape, len(y_train), len(y_test))
-        print(X_test[0])
+        # print(X_test[0])
 
         return X_train, X_test, y_train, y_test
 
 
-def gen_train_test_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def gen_train_test_data() -> tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]:
     """
     Generate training and test data from the Yelp labelled dataset.
 
@@ -66,6 +66,7 @@ def gen_train_test_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarra
     df = pd.read_csv("./yelp_labelled.txt", sep="\t", header=None, encoding="utf-8")
     count_vect = CountVectorizer()
     X = count_vect.fit_transform(df[0])
+    print(count_vect.__dict__["vocabulary_"])
     y = df[1]
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_ratio, random_state=0
@@ -73,8 +74,7 @@ def gen_train_test_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarra
 
     # DEBUG
     print(X_train.shape, X_test.shape, len(y_train), len(y_test))
-    print(X_train[1])
-    print(X_train[1, 64])
+    # print(X_test[0])
 
     return X_train, X_test, y_train, y_test
 
@@ -112,23 +112,65 @@ def multinomial_nb(
 
     for given_y in ["positive", "negative"]:
         for x_i in range(conditional_probs[given_y].shape[0]):
-            match given_y:
-                case "positive":
-                    repr_y = 1
-                case "negative":
-                    repr_y = 0
+            if given_y == "positive":
+                repr_y = 1
+            else:
+                repr_y = 0
             if SMOOTH:
                 conditional_probs[given_y][x_i] = (
                     np.sum(X_train[y_train == repr_y][:, x_i]) + 1
                 ) / (
                     np.sum(X_train[y_train == repr_y])
-                    + conditional_probs[given_y].shape[0]
+                    + conditional_probs[given_y].shape[0] * 1
                 )
             else:
                 conditional_probs[given_y][x_i] = np.sum(
                     X_train[y_train == repr_y][:, x_i]
                 ) / np.sum(X_train[y_train == repr_y])
-    print(conditional_probs)
+
+    predicted = []
+    for test_case in X_train:
+        test_case: pd.DataFrame
+        highest_prob = 0
+        highest_prob_y = None
+        for pos_neg in ["positive", "negative"]:
+            prob = prior_prob[pos_neg]
+            for x_now in range(test_case.indices.shape[0]):
+                feature = test_case.indices[x_now]
+                times = test_case.data[x_now]
+                prob *= conditional_probs[pos_neg][feature] ** times
+            if prob > highest_prob:
+                highest_prob = prob
+                highest_prob_y = pos_neg
+        predicted.append(1 if highest_prob_y == "positive" else 0)
+    predicted = np.array(predicted)
+    # print(f"predicted: {predicted}")
+    # print(f"y_test: {y_train.values}")
+    print(
+        f"train accuracy: {sum(predicted == y_train.values) / len(y_train.values) * 100}%"
+    )
+
+    predicted = []
+    for test_case in X_test:
+        test_case: pd.DataFrame
+        highest_prob = 0
+        highest_prob_y = None
+        for pos_neg in ["positive", "negative"]:
+            prob = prior_prob[pos_neg]
+            for x_now in range(test_case.indices.shape[0]):
+                feature = test_case.indices[x_now]
+                times = test_case.data[x_now]
+                prob *= conditional_probs[pos_neg][feature] ** times
+            if prob > highest_prob:
+                highest_prob = prob
+                highest_prob_y = pos_neg
+        predicted.append(1 if highest_prob_y == "positive" else 0)
+    predicted = np.array(predicted)
+    # print(f"predicted: {predicted}")
+    # print(f"y_test: {y_test.values}")
+    print(
+        f"test accuracy: {sum(predicted == y_test.values) / len(y_test.values) * 100}%"
+    )
 
 
 def bernoulli_nb(X_train, X_test, y_train, y_test):
