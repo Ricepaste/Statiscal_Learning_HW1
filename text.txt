@@ -1,0 +1,5 @@
+i loved the movie	1
+i hated the movie	0
+a great movie good movie	1
+poor acting	0
+great acting a good movie	1
