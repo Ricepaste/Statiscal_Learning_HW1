@@ -13,7 +13,23 @@ SMOOTH = 1
 
 if TEST:
 
-    def gen_custum_train_data():
+    def gen_custum_train_data() -> (
+        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    ):
+        """
+        Generate custom training and test data.
+
+        Returns
+        -------
+        X_train : np.ndarray
+            The training data.
+        X_test : np.ndarray
+            The test data.
+        y_train : np.ndarray
+            The training labels.
+        y_test : np.ndarray
+            The test labels.
+        """
         test_ratio = 0.2
         df = pd.read_csv("./text.txt", sep="\t", header=None, encoding="utf-8")
         count_vect = CountVectorizer(token_pattern=r"(?u)\b\w+\b")
@@ -31,7 +47,21 @@ if TEST:
         return X_train, X_test, y_train, y_test
 
 
-def gen_train_test_data():
+def gen_train_test_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Generate training and test data from the Yelp labelled dataset.
+
+    Returns
+    -------
+    X_train : np.ndarray
+        The training data.
+    X_test : np.ndarray
+        The test data.
+    y_train : np.ndarray
+        The training labels.
+    y_test : np.ndarray
+        The test labels.
+    """
     test_ratio = 0.3
     df = pd.read_csv("./yelp_labelled.txt", sep="\t", header=None, encoding="utf-8")
     count_vect = CountVectorizer()
@@ -49,10 +79,24 @@ def gen_train_test_data():
     return X_train, X_test, y_train, y_test
 
 
-def multinomial_nb(X_train, X_test, y_train: pd.Series, y_test):
-    # TODO: fill this function
-    # train by X_train and y_train
-    # report the predicting accuracy for both the training and the test data
+def multinomial_nb(
+    X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_test: pd.Series
+) -> None:
+    """
+    Train a Multinomial Naive Bayes model given the training data and report the
+    accuracy on both training and test data.
+
+    Parameters
+    ----------
+    X_train : pd.DataFrame
+        The training data.
+    X_test : pd.DataFrame
+        The test data.
+    y_train : pd.Series
+        The labels for the training data.
+    y_test : pd.Series
+        The labels for the test data.
+    """
 
     pos_num = y_train.value_counts()[1]
     neg_num = y_train.value_counts()[0]
