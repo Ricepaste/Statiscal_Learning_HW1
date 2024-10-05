@@ -128,49 +128,30 @@ def multinomial_nb(
                     X_train[y_train == repr_y][:, x_i]
                 ) / np.sum(X_train[y_train == repr_y])
 
-    predicted = []
-    for test_case in X_train:
-        test_case: pd.DataFrame
-        highest_prob = 0
-        highest_prob_y = None
-        for pos_neg in ["positive", "negative"]:
-            prob = prior_prob[pos_neg]
-            for x_now in range(test_case.indices.shape[0]):
-                feature = test_case.indices[x_now]
-                times = test_case.data[x_now]
-                prob *= conditional_probs[pos_neg][feature] ** times
-            if prob > highest_prob:
-                highest_prob = prob
-                highest_prob_y = pos_neg
-        predicted.append(1 if highest_prob_y == "positive" else 0)
-    predicted = np.array(predicted)
-    # print(f"predicted: {predicted}")
-    # print(f"y_test: {y_train.values}")
-    print(
-        f"train accuracy: {sum(predicted == y_train.values) / len(y_train.values) * 100}%"
-    )
-
-    predicted = []
-    for test_case in X_test:
-        test_case: pd.DataFrame
-        highest_prob = 0
-        highest_prob_y = None
-        for pos_neg in ["positive", "negative"]:
-            prob = prior_prob[pos_neg]
-            for x_now in range(test_case.indices.shape[0]):
-                feature = test_case.indices[x_now]
-                times = test_case.data[x_now]
-                prob *= conditional_probs[pos_neg][feature] ** times
-            if prob > highest_prob:
-                highest_prob = prob
-                highest_prob_y = pos_neg
-        predicted.append(1 if highest_prob_y == "positive" else 0)
-    predicted = np.array(predicted)
-    # print(f"predicted: {predicted}")
-    # print(f"y_test: {y_test.values}")
-    print(
-        f"test accuracy: {sum(predicted == y_test.values) / len(y_test.values) * 100}%"
-    )
+    for phase in ["train", "test"]:
+        if phase == "train":
+            X = X_train
+            y = y_train
+        else:
+            X = X_test
+            y = y_test
+        predicted = []
+        for test_case in X:
+            test_case: pd.DataFrame
+            highest_prob = 0
+            highest_prob_y = None
+            for pos_neg in ["positive", "negative"]:
+                prob = prior_prob[pos_neg]
+                for x_now in range(test_case.indices.shape[0]):
+                    feature = test_case.indices[x_now]
+                    times = test_case.data[x_now]
+                    prob *= conditional_probs[pos_neg][feature] ** times
+                if prob > highest_prob:
+                    highest_prob = prob
+                    highest_prob_y = pos_neg
+            predicted.append(1 if highest_prob_y == "positive" else 0)
+        predicted = np.array(predicted)
+        print(f"{phase} accuracy: {sum(predicted == y.values) / len(y.values) * 100}%")
 
 
 def bernoulli_nb(X_train, X_test, y_train, y_test):
