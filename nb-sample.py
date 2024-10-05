@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 
-TEST = 0
+TEST = 1
 SMOOTH = 1
 
 if TEST:
